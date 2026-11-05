@@ -14,7 +14,7 @@ public class HealthController {
     private String serviceDescription;
 
     public HealthController(@Value("${info.app.name}") String serviceName,
-                            @Value("{info.app.description}")String serviceDescription){
+                            @Value("${info.app.description}") String serviceDescription){
         this.serviceName=serviceName;
         this.serviceDescription=serviceDescription;
     }
