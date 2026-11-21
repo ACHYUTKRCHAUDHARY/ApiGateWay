@@ -1,76 +1,134 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
-:root {
-
-  --bg-primary: #0b0f19;
-  --bg-secondary: #111827;
-  --bg-card: #1f2937;
-  --border-color: #374151;
+/* ── Base resets ── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  background-color: #090d16;
-  color: #f3f4f6;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
 }
 
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── Focus rings (WCAG) ── */
+:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
 }
 
+/* ── Utility: font-mono ── */
+.font-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.font-body { font-family: var(--font-body); }
 
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* ── Utility: uppercase label ── */
+.label-caps {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Card base ── */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--card-padding);
+}
+
+/* ── Skeleton shimmer ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--border-light) 25%,
+    var(--surface-2) 50%,
+    var(--border-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ── Pulsing dot ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Ribbon shine ── */
+@keyframes ribbon-shine {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
+  .skeleton { animation: none; }
 
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
 
-    ::-webkit-scrollbar-track {
-      background: #0f172a;
-    }
+/* ── React 19.3+ View Transitions Recipes (Vercel) ── */
+:root {
+  --duration-exit: 140ms;
+  --duration-enter: 200ms;
+  --duration-move: 300ms;
+}
 
+@keyframes vt-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-      ::-webkit-scrollbar-thumb {
-        background: #334155;
-        border-radius: 3px;
-      }
+@keyframes vt-slide-y {
+  from { transform: translateY(8px); }
+  to { transform: translateY(0); }
+}
 
+::view-transition-old(.fade-out) {
+  animation: var(--duration-exit) ease-in vt-fade reverse;
+}
+::view-transition-new(.fade-in) {
+  animation: var(--duration-enter) ease-out var(--duration-exit) both vt-fade;
+}
 
-        ::-webkit-scrollbar-thumb:hover {
-          background: #475569;
-        }
-
-          @keyframes pulseGlow {
-
-            0%,
-            100% {
-              opacity: 0.8;
-              transform: scale(1);
-            }
-
-            50% {
-              opacity: 1;
-              transform: scale(1.02);
-            }
-          }
-
-
-            .glow-cyan {
-              box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.3);
-            }
-
-            .glow-emerald {
-              box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.3);
-            }
-
-            .glow-purple {
-              box-shadow: 0 0 15px -3px rgba(168, 85, 247, 0.3);
-            }
+::view-transition-old(.slide-down) {
+  animation:
+    var(--duration-exit) ease-out both vt-fade reverse,
+    var(--duration-exit) ease-out both vt-slide-y reverse;
+}
+::view-transition-new(.slide-up) {
+  animation:
+    var(--duration-enter) ease-in var(--duration-exit) both vt-fade,
+    var(--duration-move) ease-in both vt-slide-y;
+}

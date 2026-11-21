@@ -1,0 +1,23 @@
+# Dependencies & Build Outputs
+node_modules/
+dist/
+dist-ssr/
+target/
+*.class
+
+# Logs
+*.log
+logs/
+
+# Agent internals & skills
+.agents/
+
+# IDE / Editor
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local env
+.env*.local
+.vercel
