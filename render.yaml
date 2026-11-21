@@ -1,0 +1,60 @@
+services:
+  # 1. PayGate Frontend Console (Static Site with SPA routing)
+  - type: web
+    name: paygate-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+
+  # 2. Smart Gateway Service (Data Plane Proxy)
+  - type: web
+    name: gatekeeper-smart-gateway
+    runtime: docker
+    dockerfilePath: ./smart-gateway-service/Dockerfile
+    dockerContext: ./smart-gateway-service
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: GATEKEEPER_MANAGEMENT_SERVICE_URL
+        fromService:
+          type: web
+          name: gatekeeper-api-management
+          property: host
+      - key: GATEKEEPER_ANALYTICS_SERVICE_URL
+        fromService:
+          type: web
+          name: gatekeeper-analytics
+          property: host
+
+  # 3. API Management Service (Control Plane)
+  - type: web
+    name: gatekeeper-api-management
+    runtime: docker
+    dockerfilePath: ./api-management-service/Dockerfile
+    dockerContext: ./api-management-service
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8081
+
+  # 4. Analytics & Observability Service
+  - type: web
+    name: gatekeeper-analytics
+    runtime: docker
+    dockerfilePath: ./analytics-service/Dockerfile
+    dockerContext: ./analytics-service
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8082
