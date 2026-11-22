@@ -8,18 +8,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/health")
+@RequestMapping({"/health", "/api/v1/health"})
 public class HealthController {
-    private String serviceName;
-    private String serviceDescription;
+    private final String serviceName;
+    private final String serviceDescription;
 
-    public HealthController(@Value("${info.app.name}") String serviceName,
-                            @Value("${info.app.description}") String serviceDescription){
-        this.serviceName=serviceName;
-        this.serviceDescription=serviceDescription;
+    public HealthController(@Value("${info.app.name:api-management-service}") String serviceName,
+                            @Value("${info.app.description:Custom API gateway for routing, security and traffic management}") String serviceDescription) {
+        this.serviceName = serviceName;
+        this.serviceDescription = serviceDescription;
     }
+
     @GetMapping
-    public ResponseEntity<HealthResponse> health(){
-        return ResponseEntity.ok(new HealthResponse(serviceName,serviceDescription,"UP"));
+    public ResponseEntity<HealthResponse> health() {
+        return ResponseEntity.ok(HealthResponse.builder()
+                .serviceName(serviceName)
+                .serviceDescription(serviceDescription)
+                .status("UP")
+                .build());
     }
 }

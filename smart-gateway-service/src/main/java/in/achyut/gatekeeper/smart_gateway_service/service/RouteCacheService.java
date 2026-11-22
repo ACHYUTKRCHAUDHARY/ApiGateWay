@@ -42,7 +42,11 @@ public class RouteCacheService {
 
     public synchronized boolean refreshRoutes() {
         try {
-            String url = properties.getManagementServiceUrl() + "/api/v1/internal/gateway/routes";
+            String baseUrl = properties.getManagementServiceUrl();
+            if (baseUrl != null && !baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+                baseUrl = "http://" + baseUrl;
+            }
+            String url = baseUrl + "/api/v1/internal/gateway/routes";
             log.debug("Syncing routes from control plane: {}", url);
 
             String jsonResponse = restClient.get()

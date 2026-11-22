@@ -73,6 +73,7 @@ export interface Route {
 }
 
 export interface CreateRouteRequest {
+  routeId?: string;
   name: string;
   pathPattern: string;
   targetBaseUrl: string;
@@ -98,12 +99,15 @@ export interface RouteVersion {
 export interface Organization {
   id: number;
   name: string;
-  displayName: string;
-  contactEmail: string;
-  tier: string;
-  maxRoutesAllowed: number;
-  maxRpmPerRoute: number;
-  active: boolean;
+  slug?: string;
+  displayName?: string;
+  contactEmail?: string;
+  status?: string;
+  tier?: string;
+  maxRoutesAllowed?: number;
+  maxRpmPerRoute?: number;
+  active?: boolean;
+  routesCount?: number;
   createdAt: string;
   updatedAt: string;
 }

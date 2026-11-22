@@ -18,5 +18,6 @@ public class RouteMetricsDto {
     private double avgLatencyMs;
     private long minLatencyMs;
     private long maxLatencyMs;
+    private long p95LatencyMs;
 }
 

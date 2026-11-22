@@ -140,6 +140,12 @@ public class AnalyticsQueryService {
                     .mapToLong(l -> l.getLatencyMs() != null ? l.getLatencyMs() : 0L)
                     .summaryStatistics();
 
+            List<Long> latencies = routeLogs.stream()
+                    .map(l -> l.getLatencyMs() != null ? l.getLatencyMs() : 0L)
+                    .sorted()
+                    .collect(Collectors.toList());
+            long p95 = latencies.isEmpty() ? 0L : latencies.get((int) Math.min(latencies.size() - 1, Math.floor(latencies.size() * 0.95)));
+
             result.add(RouteMetricsDto.builder()
                     .routeId(routeId)
                     .totalRequests(total)
@@ -149,6 +155,7 @@ public class AnalyticsQueryService {
                     .avgLatencyMs(Math.round(stats.getAverage() * 10.0) / 10.0)
                     .minLatencyMs(stats.getMin() == Long.MAX_VALUE ? 0 : stats.getMin())
                     .maxLatencyMs(stats.getMax() == Long.MIN_VALUE ? 0 : stats.getMax())
+                    .p95LatencyMs(p95)
                     .build());
         }
 

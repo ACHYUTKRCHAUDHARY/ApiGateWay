@@ -51,7 +51,7 @@ public class MockUpstreamController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @RequestMapping(value = "/echo", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
+    @RequestMapping(value = {"/echo", "/echo/**"}, method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
     public ResponseEntity<Map<String, Object>> echo(
             HttpServletRequest request,
             @RequestBody(required = false) Object body) {

@@ -32,9 +32,9 @@ export const LoginPage: React.FC = () => {
   const validate = () => {
     const errors: { email?: string; password?: string } = {};
     if (!email.trim()) {
-      errors.email = 'Work email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !email.includes('admin')) {
-      errors.email = 'Please enter a valid work email address';
+      errors.email = 'Username or work email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !email.includes('admin') && !email.includes('gateway') && !email.includes('service')) {
+      errors.email = 'Please enter a valid work email address or username';
     }
     if (!password) {
       errors.password = 'Password is required';

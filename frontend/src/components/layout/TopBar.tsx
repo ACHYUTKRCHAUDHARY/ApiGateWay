@@ -78,14 +78,14 @@ export const TopBar: React.FC = () => {
         <button
           onClick={() => setShowConfig(!showConfig)}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium transition-colors cursor-pointer border ${
-            backendUrl && !isDemo
+            !isDemo
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
               : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
           }`}
           title="Click to configure Gateway backend URL"
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${backendUrl && !isDemo ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-          <span>{backendUrl && !isDemo ? 'Live Gateway' : 'Sandbox Demo'}</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${!isDemo ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+          <span>{!isDemo ? 'Live Gateway' : 'Sandbox Demo'}</span>
           <span className="text-[9px] opacity-60">⚙</span>
         </button>
 

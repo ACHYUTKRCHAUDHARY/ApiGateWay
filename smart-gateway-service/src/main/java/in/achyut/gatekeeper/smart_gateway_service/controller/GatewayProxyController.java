@@ -34,12 +34,16 @@ public class GatewayProxyController {
     private final ReverseProxyService reverseProxyService;
     private final TrafficLoggerService trafficLoggerService;
 
-    @RequestMapping(value = {"/gateway/**", "/api/**", "/echo/**", "/delay/**"})
+    @RequestMapping(value = {"/gateway/**", "/api/**", "/echo/**", "/delay/**", "/**"})
     public ResponseEntity<byte[]> proxy(HttpServletRequest request,
                                        @RequestBody(required = false) byte[] bodyBytes) {
         long startTime = System.currentTimeMillis();
         String requestId = UUID.randomUUID().toString();
         String requestPath = request.getRequestURI();
+        if (requestPath.equals("/health") || requestPath.startsWith("/health/") ||
+                requestPath.startsWith("/api/v1/health") || requestPath.startsWith("/gateway/admin/")) {
+            return null;
+        }
         String method = request.getMethod();
         String clientIp = getClientIp(request);
         String userAgent = request.getHeader("User-Agent");

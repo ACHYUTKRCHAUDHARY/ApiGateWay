@@ -18,5 +18,10 @@ public class TimeseriesPointDto {
     private long successCount;
     private long errorCount;
     private double avgLatencyMs;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("requestCount")
+    public long getRequestCount() {
+        return totalRequests;
+    }
 }
 

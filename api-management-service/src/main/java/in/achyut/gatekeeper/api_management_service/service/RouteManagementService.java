@@ -61,8 +61,21 @@ public class RouteManagementService {
 
         Organization org = resolveOrganization(request.getOrganizationId(), principal);
 
-        if (routeRepository.existsByOrganizationIdAndRouteId(org.getId(), request.getRouteId())) {
-            throw new IllegalArgumentException("Route ID '" + request.getRouteId() + "' already exists in organization " + org.getName());
+        String rawRouteId = request.getRouteId();
+        if (rawRouteId == null || rawRouteId.isBlank()) {
+            rawRouteId = request.getName().toLowerCase().replaceAll("[^a-z0-9]+", "-");
+            if (rawRouteId.startsWith("-")) rawRouteId = rawRouteId.substring(1);
+            if (rawRouteId.endsWith("-")) rawRouteId = rawRouteId.substring(0, rawRouteId.length() - 1);
+            if (rawRouteId.isBlank()) rawRouteId = "route-" + UUID.randomUUID().toString().substring(0, 8);
+        }
+        String finalRouteId = rawRouteId.trim();
+
+        if (routeRepository.existsByOrganizationIdAndRouteId(org.getId(), finalRouteId)) {
+            if (request.getRouteId() == null || request.getRouteId().isBlank()) {
+                finalRouteId = finalRouteId + "-" + UUID.randomUUID().toString().substring(0, 6);
+            } else {
+                throw new IllegalArgumentException("Route ID '" + finalRouteId + "' already exists in organization " + org.getName());
+            }
         }
 
         Set<String> methods = request.getAllowedMethods() != null && !request.getAllowedMethods().isEmpty()
@@ -71,7 +84,7 @@ public class RouteManagementService {
 
         ApiRoute route = ApiRoute.builder()
                 .organization(org)
-                .routeId(request.getRouteId().trim())
+                .routeId(finalRouteId)
                 .name(request.getName().trim())
                 .pathPattern(request.getPathPattern().trim())
                 .targetBaseUrl(request.getTargetBaseUrl().trim())

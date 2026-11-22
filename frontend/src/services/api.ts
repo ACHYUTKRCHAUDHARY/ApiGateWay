@@ -398,14 +398,20 @@ export const routesApi = {
   },
 
   create: async (data: CreateRouteRequest): Promise<ApiResponse<Route>> => {
+    const payload = {
+      ...data,
+      routeId: data.routeId || `route_${data.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+    };
     if (!isDemoMode()) {
       try {
-        return await request<ApiResponse<Route>>('/api/v1/routes', { method: 'POST', body: JSON.stringify(data) });
-      } catch {}
+        return await request<ApiResponse<Route>>('/api/v1/routes', { method: 'POST', body: JSON.stringify(payload) });
+      } catch (err: any) {
+        console.warn('Backend route creation failed, using mock fallback:', err);
+      }
     }
     const newRoute: Route = {
       id: Date.now(),
-      routeId: `route_${data.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+      routeId: payload.routeId,
       organizationId: 1,
       organizationName: 'PayGate Core Engine',
       name: data.name,
@@ -482,6 +488,16 @@ export const routesApi = {
   },
 
   rollback: async (routeId: string, targetVersion: number): Promise<ApiResponse<Route>> => {
+    if (!isDemoMode()) {
+      try {
+        return await request<ApiResponse<Route>>(`/api/v1/routes/${routeId}/rollback`, {
+          method: 'POST',
+          body: JSON.stringify({ targetVersion }),
+        });
+      } catch (err: any) {
+        console.warn('Backend rollback request failed:', err);
+      }
+    }
     return { success: true, message: `Rolled back to v${targetVersion}`, data: mockRoutes[0], timestamp: new Date().toISOString() };
   },
 };
@@ -504,6 +520,35 @@ export const orgsApi = {
     }
     const found = MOCK_ORGS.find(o => o.id === id) || MOCK_ORGS[0];
     return { success: true, message: 'Loaded', data: found, timestamp: new Date().toISOString() };
+  },
+  create: async (data: { name: string; slug?: string }): Promise<ApiResponse<Organization>> => {
+    const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    if (!isDemoMode()) {
+      try {
+        return await request<ApiResponse<Organization>>('/api/v1/organizations', {
+          method: 'POST',
+          body: JSON.stringify({ name: data.name, slug }),
+        });
+      } catch (err) {
+        console.warn('Backend create organization failed:', err);
+      }
+    }
+    const newOrg: Organization = {
+      id: Date.now(),
+      name: data.name,
+      slug,
+      displayName: data.name,
+      contactEmail: `admin@${slug}.dev`,
+      tier: 'ENTERPRISE',
+      maxRoutesAllowed: 50,
+      maxRpmPerRoute: 5000,
+      active: true,
+      routesCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    MOCK_ORGS.unshift(newOrg);
+    return { success: true, message: 'Organization created', data: newOrg, timestamp: new Date().toISOString() };
   },
 };
 

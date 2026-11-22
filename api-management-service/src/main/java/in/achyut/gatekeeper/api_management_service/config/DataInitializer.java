@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -23,7 +25,9 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final ManagementUserRepository userRepository;
     private final ApiRouteRepository routeRepository;
+    private final RouteConfigurationVersionRepository versionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
     @Override
     @Transactional
@@ -185,6 +189,38 @@ public class DataInitializer implements CommandLineRunner {
             routeRepository.save(delayRoute);
 
             log.info("Initialized 3 demo routes.");
+        }
+
+        // Ensure all routes have at least an initial version record
+        List<ApiRoute> allRoutes = routeRepository.findAll();
+        for (ApiRoute r : allRoutes) {
+            if (versionRepository.findByOrganizationIdAndRouteIdOrderByVersionNumberDesc(r.getOrganization().getId(), r.getRouteId()).isEmpty()) {
+                try {
+                    Map<String, Object> snapshot = new HashMap<>();
+                    snapshot.put("routeId", r.getRouteId());
+                    snapshot.put("name", r.getName());
+                    snapshot.put("pathPattern", r.getPathPattern());
+                    snapshot.put("targetBaseUrl", r.getTargetBaseUrl());
+                    snapshot.put("targetPathPrefix", r.getTargetPathPrefix());
+                    snapshot.put("requestsPerMinute", r.getRequestsPerMinute());
+                    snapshot.put("responseTimeoutMs", r.getResponseTimeoutMs());
+                    snapshot.put("idempotencyEnabled", r.getIdempotencyEnabled());
+                    snapshot.put("active", r.getActive());
+                    snapshot.put("configurationVersion", r.getConfigurationVersion() != null ? r.getConfigurationVersion() : 1L);
+
+                    versionRepository.save(RouteConfigurationVersion.builder()
+                            .organization(r.getOrganization())
+                            .routeId(r.getRouteId())
+                            .versionNumber(r.getConfigurationVersion() != null ? r.getConfigurationVersion() : 1L)
+                            .changeType("INITIAL_RELEASE")
+                            .configurationSnapshot(objectMapper.writeValueAsString(snapshot))
+                            .createdAt(LocalDateTime.now())
+                            .build());
+                    log.info("Created initial version snapshot for route: {}", r.getRouteId());
+                } catch (Exception e) {
+                    log.warn("Could not create initial version snapshot: {}", e.getMessage());
+                }
+            }
         }
     }
 }

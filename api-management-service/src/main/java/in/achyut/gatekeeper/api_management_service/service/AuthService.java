@@ -86,13 +86,17 @@ public class AuthService {
             throw new IllegalArgumentException("Username already exists: " + request.getUsername());
         }
 
-        Role role = roleRepository.findByName(request.getRole().toUpperCase())
-                .orElseThrow(() -> new IllegalArgumentException("Role not found: " + request.getRole()));
+        String roleStr = (request.getRole() != null && !request.getRole().isBlank()) ? request.getRole().toUpperCase() : "TENANT_ADMIN";
+        Role role = roleRepository.findByName(roleStr)
+                .orElseGet(() -> roleRepository.findByName("TENANT_ADMIN")
+                        .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleStr)));
 
         Organization org = null;
         if (request.getOrganizationId() != null) {
             org = organizationRepository.findById(request.getOrganizationId())
                     .orElseThrow(() -> new IllegalArgumentException("Organization not found: " + request.getOrganizationId()));
+        } else {
+            org = organizationRepository.findBySlug("gatekeeper-core").orElse(null);
         }
 
         ManagementUser user = ManagementUser.builder()

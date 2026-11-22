@@ -28,11 +28,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public ResponseEntity<ApiResponse<UserProfileResponse>> register(
             @Valid @RequestBody RegisterUserRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
-        String actor = principal != null ? principal.getUsername() : "anonymous";
+        String actor = principal != null ? principal.getUsername() : "self-registration";
         UserProfileResponse response = authService.register(request, actor);
         return ResponseEntity.ok(ApiResponse.ok("User registered successfully", response));
     }

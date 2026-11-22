@@ -1,15 +1,43 @@
 package in.achyut.gatekeeper.api_management_service.dto.responseDto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-
 public class HealthResponse {
-    private String serviceNam;
+    @JsonProperty("serviceName")
+    private String serviceName;
+
+    @JsonProperty("serviceDescription")
     private String serviceDescription;
-    private String appStatus;
+
+    @JsonProperty("status")
+    private String status;
+
+    // Backward compatibility aliases
+    @JsonProperty("serviceNam")
+    public String getServiceNam() {
+        return serviceName;
+    }
+
+    @JsonProperty("name")
+    public String getName() {
+        return serviceName;
+    }
+
+    @JsonProperty("description")
+    public String getDescription() {
+        return serviceDescription;
+    }
+
+    @JsonProperty("appStatus")
+    public String getAppStatus() {
+        return status;
+    }
 }

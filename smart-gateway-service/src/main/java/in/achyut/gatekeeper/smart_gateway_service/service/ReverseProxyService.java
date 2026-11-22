@@ -6,7 +6,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
@@ -18,10 +17,16 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Set;
 
 @Service
 @Slf4j
 public class ReverseProxyService {
+
+    private static final Set<String> HOP_BY_HOP_HEADERS = Set.of(
+            "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
+            "te", "trailers", "transfer-encoding", "upgrade"
+    );
 
     public ResponseEntity<byte[]> forward(HttpMethod method, String targetUrl, HttpHeaders headers,
                                           byte[] body, RouteRule route) {
@@ -36,9 +41,17 @@ public class ReverseProxyService {
                 .build();
 
         try {
+            // Strip hop-by-hop headers from outgoing request
+            HttpHeaders outgoingHeaders = new HttpHeaders();
+            headers.forEach((name, values) -> {
+                if (!HOP_BY_HOP_HEADERS.contains(name.toLowerCase())) {
+                    outgoingHeaders.put(name, values);
+                }
+            });
+
             RestClient.RequestBodySpec spec = client.method(method)
                     .uri(URI.create(targetUrl))
-                    .headers(h -> h.addAll(headers));
+                    .headers(h -> h.addAll(outgoingHeaders));
 
             if (body != null && body.length > 0) {
                 spec.body(body);
@@ -46,7 +59,11 @@ public class ReverseProxyService {
 
             return spec.exchange((req, res) -> {
                 HttpHeaders resHeaders = new HttpHeaders();
-                res.getHeaders().forEach(resHeaders::put);
+                res.getHeaders().forEach((name, values) -> {
+                    if (!HOP_BY_HOP_HEADERS.contains(name.toLowerCase())) {
+                        resHeaders.put(name, values);
+                    }
+                });
 
                 byte[] resBytes = readAllBytes(res.getBody());
                 return new ResponseEntity<>(resBytes, resHeaders, res.getStatusCode());

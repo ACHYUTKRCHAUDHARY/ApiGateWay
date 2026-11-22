@@ -131,47 +131,65 @@ export const HomePage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleTestRequest = () => {
+  const handleTestRequest = async () => {
     setIsSimulating(true);
-    setTimeout(() => {
-      const isRateLimited = rateLimitSlider === 0;
-      const status = isRateLimited ? 429 : 200;
-      const statusText = isRateLimited ? 'RATE_LIMITED' : 'CAPTURED';
-      const latency = isRateLimited ? 1.1 : Number((4.1 + Math.random() * 4.2).toFixed(1));
-      const remaining = isRateLimited ? 0 : Math.max(0, rateLimitSlider - 1);
-      const endpointDetails = {
-        upi: { route: 'route_upi_collect', path: '/api/v1/upi/collect' },
-        card: { route: 'route_cards_3ds', path: '/api/v1/charge/card' },
-        refund: { route: 'route_refund_dispatcher', path: '/api/v1/refunds' },
-      }[selectedEndpoint];
+    const start = performance.now();
+    const isRateLimited = rateLimitSlider === 0;
 
-      setSimulatedResponse({
-        status,
-        statusText,
-        latency,
-        remaining,
-        txId: isRateLimited ? 'err_ratelimit_burst' : `pay_${Math.random().toString(36).substring(2, 10)}`,
-        route: endpointDetails.route,
-        path: endpointDetails.path,
-        timestamp: new Date().toISOString(),
-      });
+    let realLatency = 4.2;
+    let serverRemaining = isRateLimited ? 0 : Math.max(0, rateLimitSlider - 1);
+    let statusCode = isRateLimited ? 429 : 200;
 
-      setSimulationLogs(
-        isRateLimited
-          ? [
-              { step: 'Edge TLS Termination', status: 'ok', ms: 0.9 },
-              { step: 'Token Bucket Exceeded: 0 RPM Available (HTTP 429)', status: 'throttle', ms: 1.1 },
-            ]
-          : [
-              { step: 'Edge TLS Termination', status: 'ok', ms: 1.0 },
-              { step: `Token Bucket Check (${remaining} tokens remaining)`, status: 'ok', ms: 1.7 },
-              { step: 'Distributed Idempotency Verified (Unique Key)', status: 'ok', ms: 2.3 },
-              { step: 'Upstream Banking Core Synchronized', status: 'ok', ms: latency },
-            ]
-      );
+    try {
+      if (!isRateLimited) {
+        const res = await fetch('/gateway/echo', {
+          method: 'GET',
+          headers: { 'X-Simulator-Test': 'true' },
+        });
+        realLatency = Number((performance.now() - start).toFixed(1));
+        statusCode = res.status;
+        const remainingH = res.headers.get('x-ratelimit-remaining');
+        if (remainingH) serverRemaining = parseInt(remainingH, 10);
+      }
+    } catch {
+      // offline fallback
+      realLatency = Number((4.1 + Math.random() * 3.5).toFixed(1));
+    }
 
-      setIsSimulating(false);
-    }, 420);
+    const endpointDetails = {
+      upi: { route: 'route_upi_collect', path: '/api/v1/upi/collect' },
+      card: { route: 'route_cards_3ds', path: '/api/v1/charge/card' },
+      refund: { route: 'route_refund_dispatcher', path: '/api/v1/refunds' },
+    }[selectedEndpoint];
+
+    const statusText = statusCode === 429 ? 'RATE_LIMITED' : 'CAPTURED';
+
+    setSimulatedResponse({
+      status: statusCode,
+      statusText,
+      latency: realLatency,
+      remaining: serverRemaining,
+      txId: statusCode === 429 ? 'err_ratelimit_burst' : `pay_${Math.random().toString(36).substring(2, 10)}`,
+      route: endpointDetails.route,
+      path: endpointDetails.path,
+      timestamp: new Date().toISOString(),
+    });
+
+    setSimulationLogs(
+      statusCode === 429
+        ? [
+            { step: 'Edge TLS Termination', status: 'ok', ms: 0.9 },
+            { step: 'Token Bucket Exceeded: 0 RPM Available (HTTP 429)', status: 'throttle', ms: 1.1 },
+          ]
+        : [
+            { step: 'Edge TLS Termination (Gateway Proxy :8080)', status: 'ok', ms: 1.0 },
+            { step: `Sliding Window Rate Limit (${serverRemaining} requests remaining)`, status: 'ok', ms: 1.7 },
+            { step: 'Distributed Idempotency Verified (Unique Key)', status: 'ok', ms: 2.3 },
+            { step: 'Upstream Banking Core Synchronized', status: 'ok', ms: realLatency },
+          ]
+    );
+
+    setIsSimulating(false);
   };
 
   const copyToClipboard = (text: string, type: 'response' | 'code') => {

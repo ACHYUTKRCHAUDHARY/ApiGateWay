@@ -54,7 +54,11 @@ public class TrafficLoggerService {
             // Fallback or direct delivery to analytics-service REST ingestion endpoint
             if (!sentToKafka) {
                 try {
-                    String ingestUrl = properties.getAnalyticsServiceUrl() + "/api/v1/analytics/ingest";
+                    String baseUrl = properties.getAnalyticsServiceUrl();
+                    if (baseUrl != null && !baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+                        baseUrl = "http://" + baseUrl;
+                    }
+                    String ingestUrl = baseUrl + "/api/v1/analytics/ingest";
                     restClient.post()
                             .uri(ingestUrl)
                             .header("Content-Type", "application/json")

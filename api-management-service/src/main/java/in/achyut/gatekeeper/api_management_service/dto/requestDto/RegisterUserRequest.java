@@ -17,7 +17,6 @@ public class RegisterUserRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    @NotBlank(message = "Role is required")
     private String role; // PLATFORM_ADMIN, TENANT_ADMIN, GATEWAY_SERVICE
 
     private Long organizationId;

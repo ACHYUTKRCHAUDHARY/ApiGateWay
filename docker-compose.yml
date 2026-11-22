@@ -145,6 +145,10 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      MANAGEMENT_URL: http://api-management-service:8081
+      GATEWAY_URL: http://smart-gateway-service:8080
+      ANALYTICS_URL: http://analytics-service:8082
     depends_on:
       - smart-gateway-service
       - api-management-service

@@ -42,11 +42,20 @@ public class HeaderTransformationService {
         return headers;
     }
 
+    private static final java.util.Set<String> HOP_BY_HOP_HEADERS = java.util.Set.of(
+            "connection", "keep-alive", "proxy-authenticate", "proxy-authorization",
+            "te", "trailers", "transfer-encoding", "upgrade"
+    );
+
     public HttpHeaders transformResponseHeaders(HttpHeaders upstreamHeaders, RouteRule route,
             String requestId, long latencyMs) {
         HttpHeaders headers = new HttpHeaders();
         if (upstreamHeaders != null) {
-            headers.putAll(upstreamHeaders);
+            upstreamHeaders.forEach((name, values) -> {
+                if (!HOP_BY_HOP_HEADERS.contains(name.toLowerCase())) {
+                    headers.put(name, values);
+                }
+            });
         }
 
         // Add gateway tracking headers

@@ -85,9 +85,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginDemo = async (role: 'platform' | 'tenant' = 'platform') => {
-    setDemoMode(true);
     const username = role === 'platform' ? 'platform-admin' : 'tenant-admin';
-    await login({ username, password: 'password' });
+    try {
+      setDemoMode(false);
+      await login({ username, password: 'admin123' });
+    } catch {
+      setDemoMode(true);
+      await login({ username, password: 'password' });
+    }
   };
 
   const updateBackendUrl = (url: string | null) => {

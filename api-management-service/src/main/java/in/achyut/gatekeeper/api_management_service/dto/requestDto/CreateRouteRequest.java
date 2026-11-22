@@ -17,7 +17,6 @@ public class CreateRouteRequest {
 
     private Long organizationId;
 
-    @NotBlank(message = "Route ID is required")
     private String routeId;
 
     @NotBlank(message = "Name is required")
