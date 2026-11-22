@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api|gateway).*)",
+      "source": "/((?!api|gateway|assets).*)",
       "destination": "/index.html"
     }
   ]

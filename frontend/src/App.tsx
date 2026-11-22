@@ -10,6 +10,8 @@ import { SkeletonBlock } from '@/components/ui/Primitives';
 const HomePage = lazy(() => import('@/pages/HomePage').then((m) => ({ default: m.HomePage })));
 const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })));
 const CreateAccountPage = lazy(() => import('@/pages/CreateAccountPage').then((m) => ({ default: m.CreateAccountPage })));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const TransactionsPage = lazy(() => import('@/pages/TransactionsPage').then((m) => ({ default: m.TransactionsPage })));
@@ -59,7 +61,9 @@ export function App() {
                   {/* Public Landing & Auth Routes */}
                   <Route path="/" element={<HomePage />} />
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<CreateAccountPage />} />
                   <Route path="/register" element={<CreateAccountPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
                   {/* Protected Control Plane Routes */}
                   <Route
@@ -79,8 +83,8 @@ export function App() {
                     <Route path="/audit" element={<AuditPage />} />
                   </Route>
 
-                  {/* Fallback */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  {/* Custom 404 Route */}
+                  <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </ViewTransition>
             </Suspense>

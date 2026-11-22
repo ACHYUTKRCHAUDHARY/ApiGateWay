@@ -18,9 +18,11 @@ interface AuthState {
   token: string | null;
   loading: boolean;
   isDemo: boolean;
+  isAuthenticated: boolean;
   backendUrl: string;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
+  signup: (data: RegisterRequest) => Promise<void>;
   loginDemo: (role?: 'platform' | 'tenant') => Promise<void>;
   logout: () => void;
   updateBackendUrl: (url: string | null) => void;
@@ -104,9 +106,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         loading,
         isDemo,
+        isAuthenticated: !!user || !!token,
         backendUrl,
         login,
         register,
+        signup: register,
         loginDemo,
         logout,
         updateBackendUrl,
