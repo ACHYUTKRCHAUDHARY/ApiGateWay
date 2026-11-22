@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 
 const TABS = [
-  { label: 'Dashboard', path: '/' },
+  { label: 'Dashboard', path: '/dashboard' },
   { label: 'Transactions', path: '/transactions' },
   { label: 'Developers', path: '/api-keys' },
   { label: 'Analytics', path: '/analytics' },

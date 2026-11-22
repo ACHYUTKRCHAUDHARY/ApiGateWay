@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { Mascot } from '@/components/icons/Mascot';
@@ -58,7 +58,9 @@ export const LoginPage: React.FC = () => {
       style={{ background: 'linear-gradient(180deg, #0B1220 0%, #14203A 100%)' }}
     >
       <div className="mb-6 flex flex-col items-center">
-        <Logo className="scale-125 mb-2" />
+        <Link to="/" className="hover:opacity-90 transition-opacity">
+          <Logo className="scale-125 mb-2" />
+        </Link>
         <p className="text-xs text-[#8B9BC0] font-medium" style={{ fontFamily: 'var(--font-body)' }}>
           Merchant Payment Gateway Control Plane
         </p>
@@ -164,6 +166,14 @@ export const LoginPage: React.FC = () => {
                 <span>🏢</span>
                 Tenant Admin
               </button>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-xs text-[#5A6785] dark:text-[#8B9BC0]">
+                Don't have an account?{' '}
+                <Link to="/register" className="text-[#0B1220] dark:text-[#D4F564] font-bold hover:underline">
+                  Create Merchant Account →
+                </Link>
+              </p>
             </div>
           </div>
 

@@ -8,6 +8,16 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  role?: string;
+  organizationName?: string;
+  organizationId?: number;
+  contactEmail?: string;
+  fullName?: string;
+}
+
 export interface AuthResponse {
   token: string;
   tokenType: string;

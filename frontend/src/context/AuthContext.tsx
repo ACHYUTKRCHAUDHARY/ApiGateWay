@@ -11,7 +11,7 @@ import {
   getBackendUrl,
   setBackendUrl as persistBackendUrl,
 } from '@/services/api';
-import type { AuthResponse, LoginRequest } from '@/types';
+import type { AuthResponse, LoginRequest, RegisterRequest } from '@/types';
 
 interface AuthState {
   user: (AuthResponse & { displayName?: string }) | null;
@@ -20,6 +20,7 @@ interface AuthState {
   isDemo: boolean;
   backendUrl: string;
   login: (data: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
   loginDemo: (role?: 'platform' | 'tenant') => Promise<void>;
   logout: () => void;
   updateBackendUrl: (url: string | null) => void;
@@ -72,6 +73,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser({ ...auth, displayName: auth.username });
   };
 
+  const register = async (data: RegisterRequest) => {
+    const res = await authApi.register(data);
+    const auth = res.data;
+    persistToken(auth.token);
+    setTokenState(auth.token);
+    setIsDemo(isDemoMode());
+    setUser({ ...auth, displayName: auth.username });
+  };
+
   const loginDemo = async (role: 'platform' | 'tenant' = 'platform') => {
     setDemoMode(true);
     const username = role === 'platform' ? 'platform-admin' : 'tenant-admin';
@@ -96,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isDemo,
         backendUrl,
         login,
+        register,
         loginDemo,
         logout,
         updateBackendUrl,

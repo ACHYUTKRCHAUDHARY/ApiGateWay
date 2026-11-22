@@ -11,7 +11,7 @@ const NAV_GROUPS = [
   {
     heading: 'Overview',
     items: [
-      { label: 'Dashboard', path: '/', icon: 'grid' },
+      { label: 'Dashboard', path: '/dashboard', icon: 'grid' },
       { label: 'Transactions', path: '/transactions', icon: 'receipt' },
       { label: 'Analytics', path: '/analytics', icon: 'chart' },
     ],

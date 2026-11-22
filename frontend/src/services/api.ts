@@ -4,7 +4,7 @@
 // with automatic high-fidelity typed fallback for zero-downtime demo.
 // ═══════════════════════════════════════════════════════════════
 import type {
-  ApiResponse, AuthResponse, LoginRequest, UserProfile,
+  ApiResponse, AuthResponse, LoginRequest, RegisterRequest, UserProfile,
   Route, CreateRouteRequest, RouteVersion,
   Organization, AuditRecord,
   AnalyticsOverview, TimeseriesPoint, RouteMetrics, StatusCodeCount, AccessLog,
@@ -251,6 +251,51 @@ function generateMockAuth(username: string): AuthResponse {
 
 // ── Auth ──
 export const authApi = {
+  register: async (data: RegisterRequest): Promise<ApiResponse<AuthResponse>> => {
+    if (!isDemoMode()) {
+      try {
+        await request<ApiResponse<UserProfile>>('/api/v1/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({
+            username: data.username,
+            password: data.password,
+            role: data.role || 'TENANT_ADMIN',
+            organizationId: data.organizationId || null,
+          }),
+        });
+        return await authApi.login({ username: data.username, password: data.password });
+      } catch (err: any) {
+        // Fall through to sandbox provision if backend is unavailable
+      }
+    }
+
+    const orgName = data.organizationName || `${data.username}'s Payments`;
+    const newOrg: Organization = {
+      id: Date.now(),
+      name: orgName,
+      active: true,
+      createdAt: new Date().toISOString(),
+      monthlyQuota: 10000000,
+      currentMonthUsage: 0,
+    };
+    MOCK_ORGS.push(newOrg);
+    setDemoMode(true);
+    const mockAuth: AuthResponse = {
+      token: `demo_jwt_${Date.now()}_${data.username}`,
+      tokenType: 'Bearer',
+      username: data.username,
+      role: data.role || 'ROLE_TENANT_ADMIN',
+      organizationId: newOrg.id,
+      organizationName: orgName,
+    };
+    return {
+      success: true,
+      message: 'Merchant account registered successfully',
+      data: mockAuth,
+      timestamp: new Date().toISOString(),
+    };
+  },
+
   login: async (data: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
     // If not in forced demo mode, attempt real backend first
     if (!isDemoMode()) {
